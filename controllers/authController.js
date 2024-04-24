@@ -15,14 +15,22 @@ exports.login = async (req, res) => {
 
         if (!user) {
             console.log('User not found');
-            return res.status(404).json({ status: 'error', message: 'User not found' });
+            return res.status(404).json({
+                code: 404,
+                status: 'error',
+                message: 'User not found'
+            });
         }
 
         // Perform password comparison
         const passwordMatch = await bcrypt.compare(password, user.password);
 
         if (!passwordMatch) {
-            return res.status(401).json({ status: 'error', message: 'Invalid credentials' });
+            return res.status(401).json({
+                code: 401,
+                status: 'error',
+                message: 'Invalid credentials'
+            });
         }
 
         // Generate JWT token
@@ -30,16 +38,30 @@ exports.login = async (req, res) => {
             expiresIn: '1h', // Token expires in 1 hour
         });
 
-        res.json({ status: 'success', message: 'Login successful', user: { uuid: user.uuid, username: user.username, rolename: user.rolename }, token });
+        res.json({
+            code: 200,
+            status: 'success',
+            message: 'Login successful',
+            token,
+            user: { uuid: user.uuid, username: user.username, rolename: user.rolename }
+        });
     } catch (error) {
         console.error('Login error:', error);
-        res.status(500).json({ status: 'error', message: 'Internal server error' });
+        res.status(500).json({
+            code: 500,
+            status: 'error',
+            message: 'Internal server error'
+        });
     }
 };
 
 exports.logout = async (req, res) => {
     // remove jwt token from client
-    res.json({ status: 'success', message: 'Logout successful' });
+    res.json({
+        code: 200,
+        status: 'success',
+        message: 'Logout successful'
+    });
 };
 
 exports.resetPassword = async (req, res) => {
@@ -56,12 +78,24 @@ exports.resetPassword = async (req, res) => {
         const updatedUser = await User.findByIdAndUpdate(uuid, { password: hashedPassword });
 
         if (!updatedUser) {
-            return res.status(404).json({ status: 'error', message: 'User not found' });
+            return res.status(404).json({
+                code: 404,
+                status: 'error',
+                message: 'User not found'
+            });
         }
 
-        res.json({ status: 'success', message: 'Password updated successfully' });
+        res.json({
+            code: 200,
+            status: 'success',
+            message: 'Password updated successfully'
+        });
     } catch (error) {
         console.error('Reset password error:', error);
-        res.status(500).json({ status: 'error', message: error.sqlMessage });
+        res.status(500).json({
+            code: 500,
+            status: 'error',
+            message: error.sqlMessage
+        });
     }
 };

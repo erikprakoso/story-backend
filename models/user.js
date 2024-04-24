@@ -88,6 +88,34 @@ class User {
             });
         });
     }
+
+    static async getAll() {
+        return new Promise((resolve, reject) => {
+            db.query('SELECT uuid, username, name, rolename, phone_number FROM user', (error, results) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    const users = results.map((row) => {
+                        const { uuid, username, password, name, rolename, phone_number } = row;
+                        return new User(uuid, username, password, name, rolename, phone_number);
+                    });
+                    resolve(users);
+                }
+            });
+        });
+    }
+
+    static async findByIdAndUpdate(uuid, updates) {
+        return new Promise((resolve, reject) => {
+            db.query('UPDATE user SET ? WHERE uuid = ?', [updates, uuid], (error, results) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(results.affectedRows > 0);
+                }
+            });
+        });
+    }
 }
 
 module.exports = User;

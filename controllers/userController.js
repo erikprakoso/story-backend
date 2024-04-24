@@ -5,17 +5,26 @@ const User = require('../models/user');
 exports.addUser = async (req, res) => {
   try {
     const { username, password, name, rolename, phone_number } = req.body;
-    
+
     // Hash password sebelum disimpan
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Simpan pengguna ke database
     const uuid = await User.create(username, hashedPassword, name, rolename, phone_number);
 
-    res.status(201).json({ status: 'success', message: 'User added successfully', uuid });
+    res.status(201).json({
+      code: 201,
+      status: 'success',
+      message: 'User added successfully',
+      uuid
+    });
   } catch (error) {
     console.error('Error adding user:', error);
-    res.status(500).json({ status: 'error', message: error.sqlMessage });
+    res.status(500).json({
+      code: 500,
+      status: 'error',
+      message: error.sqlMessage
+    });
   }
 };
 
@@ -29,13 +38,25 @@ exports.editUser = async (req, res) => {
     const success = await User.update(uuid, updates);
 
     if (success) {
-      res.json({ status: 'success', message: 'User updated successfully' });
+      res.json({
+        code: 200,
+        status: 'success',
+        message: 'User updated successfully'
+      });
     } else {
-      res.status(404).json({ status: 'error', message: 'User not found' });
+      res.status(404).json({
+        code: 404,
+        status: 'error',
+        message: 'User not found'
+      });
     }
   } catch (error) {
     console.error('Error editing user:', error);
-    res.status(500).json({ status: 'error', message: error.sqlMessage });
+    res.status(500).json({
+      code: 500,
+      status: 'error',
+      message: error.sqlMessage
+    });
   }
 };
 
@@ -48,13 +69,25 @@ exports.deleteUser = async (req, res) => {
     const success = await User.delete(uuid);
 
     if (success) {
-      res.json({ status: 'success', message: 'User deleted successfully' });
+      res.json({
+        code: 200,
+        status: 'success',
+        message: 'User deleted successfully'
+      });
     } else {
-      res.status(404).json({ status: 'error', message: 'User not found' });
+      res.status(404).json({
+        code: 404,
+        status: 'error',
+        message: 'User not found'
+      });
     }
   } catch (error) {
     console.error('Error deleting user:', error);
-    res.status(500).json({ status: 'error', message: error.sqlMessage });
+    res.status(500).json({
+      code: 500,
+      status: 'error',
+      message: error.sqlMessage
+    });
   }
 };
 
@@ -64,9 +97,18 @@ exports.getAllUsers = async (req, res) => {
     // Ambil semua pengguna dari database
     const users = await User.getAll();
 
-    res.json({ status: 'success', message: 'Users retrieved successfully', data: users });
+    res.json({
+      code: 200,
+      status: 'success',
+      message: 'Users retrieved successfully',
+      data: users
+    });
   } catch (error) {
     console.error('Error fetching users:', error);
-    res.status(500).json({ status: 'error', message: error.sqlMessage });
+    res.status(500).json({
+      code: 500,
+      status: 'error',
+      message: error.sqlMessage
+    });
   }
 };
