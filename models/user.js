@@ -1,4 +1,6 @@
 const db = require('./db');
+const bcrypt = require('bcrypt');
+const { v4: uuidv4 } = require('uuid');
 
 class User {
     constructor(uuid, username, password, name, rolename, phone_number) {
@@ -48,24 +50,18 @@ class User {
 
     static async create(username, password, name, rolename, phone_number) {
         return new Promise((resolve, reject) => {
-            bcrypt.hash(password, 10, (hashError, hashedPassword) => {
-                if (hashError) {
-                    reject(hashError);
-                } else {
-                    const uuid = uuidv4(); // Generate UUID for the user
-                    db.query(
-                        'INSERT INTO user (uuid, username, password, name, rolename, phone_number) VALUES (?, ?, ?, ?, ?, ?)',
-                        [uuid, username, hashedPassword, name, rolename, phone_number],
-                        (insertError, results) => {
-                            if (insertError) {
-                                reject(insertError);
-                            } else {
-                                resolve(uuid); // Resolve with the UUID of the newly created user
-                            }
-                        }
-                    );
+            const uuid = uuidv4(); // Generate UUID for the user
+            db.query(
+                'INSERT INTO user (uuid, username, password, name, rolename, phone_number) VALUES (?, ?, ?, ?, ?, ?)',
+                [uuid, username, password, name, rolename, phone_number],
+                (insertError, results) => {
+                    if (insertError) {
+                        reject(insertError);
+                    } else {
+                        resolve(uuid); // Resolve with the UUID of the newly created user
+                    }
                 }
-            });
+            );
         });
     }
 

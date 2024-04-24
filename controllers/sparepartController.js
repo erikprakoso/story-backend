@@ -47,6 +47,21 @@ exports.addSparepart = async (req, res) => {
     }
 };
 
+// Controller untuk menambah suku cadang secara massal dari file
+exports.addSparepartsBulk = async (req, res) => {
+    try {
+        const bulkSpareparts = req.body;
+
+        // Tambah suku cadang secara massal ke database
+        const result = await Sparepart.addBulkSpareparts(bulkSpareparts);
+
+        res.status(201).json({ message: 'Spareparts added successfully', result });
+    } catch (error) {
+        console.error('Error adding spareparts in bulk:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
 // Controller untuk mengedit informasi suku cadang
 exports.editSparepart = async (req, res) => {
     try {

@@ -1,8 +1,18 @@
 // Misalnya, dalam file models/db.js
-import { dbConfig } from '../config/config';
-
-const mysql = require('mysql');
+const mysql = require('mysql2');
 const util = require('util');
+const dotenv = require('dotenv');
+
+// Mengakses variabel lingkungan jika menggunakan dotenv
+dotenv.config();
+
+const dbConfig = {
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+};
 
 // Buat koneksi ke database
 const connection = mysql.createConnection(dbConfig);
@@ -19,4 +29,4 @@ connection.connect((err) => {
 // Mengubah method query menjadi promise-based
 const query = util.promisify(connection.query).bind(connection);
 
-export { query, connection }; // Juga bisa mengekspor method atau variabel lainnya jika diperlukan
+module.exports = { connection, query };
