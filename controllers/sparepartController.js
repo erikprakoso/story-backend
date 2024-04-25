@@ -1,17 +1,59 @@
 const Sparepart = require('../models/sparepart');
+const { query } = require('../models/db');
 
-// Controller untuk melihat semua suku cadang
+// Controller for viewing all spare parts with pagination, search, and filtering
 exports.getAllSpareparts = async (req, res) => {
     try {
-        // Ambil semua suku cadang dari database
-        const spareparts = await Sparepart.getAll();
+        const { page, limit, search, type } = req.query;
+        let conditions = [];
 
-        res.json(spareparts);
+        // Membuat array untuk menyimpan kondisi-kondisi SQL
+        let sqlConditions = [];
+
+        // Menambahkan kondisi pencarian jika ada parameter 'search'
+        if (search) {
+            sqlConditions.push(`name LIKE '%${search}%'`);
+        }
+
+        // Menambahkan kondisi filtering berdasarkan 'type'
+        if (type) {
+            sqlConditions.push(`uuid_sparepart_type = '${type}'`);
+        }
+
+        // Menggabungkan kondisi-kondisi SQL menjadi sebuah string
+        if (sqlConditions.length > 0) {
+            conditions.push(`WHERE ${sqlConditions.join(' AND ')}`);
+        }
+
+        // Menghitung jumlah total sparepart
+        const countQuery = `SELECT COUNT(*) AS total FROM sparepart ${conditions.join(' ')}`;
+        const totalCountResult = await query(countQuery);
+        const totalCount = totalCountResult[0].total;
+
+        // Menyiapkan query untuk mengambil data sparepart dengan pagination
+        const offset = (page - 1) * limit;
+        const selectQuery = `SELECT * FROM sparepart ${conditions.join(' ')} LIMIT ${limit} OFFSET ${offset}`;
+        const spareparts = await query(selectQuery);
+
+        if (spareparts.length === 0) {
+            return res.status(404).json({ code: 404, status: 'error', message: 'Spareparts not found' });
+        }
+
+        res.json({
+            code: 200, status: 'success', data: spareparts,
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalItems: totalCount,
+                totalPages: Math.ceil(totalCount / limit)
+            }
+        });
     } catch (error) {
         console.error('Error fetching spareparts:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ code: 500, status: 'error', message: 'Internal Server Error' });
     }
 };
+
 
 // Controller untuk melihat detail suku cadang berdasarkan UUID
 exports.getSparepartById = async (req, res) => {
@@ -24,11 +66,11 @@ exports.getSparepartById = async (req, res) => {
         if (sparepart) {
             res.json(sparepart);
         } else {
-            res.status(404).json({ error: 'Sparepart not found' });
+            res.status(404).json({ code: 404, status: 'error', message: 'Sparepart not found' });
         }
     } catch (error) {
         console.error('Error fetching sparepart:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ code: 500, status: 'error', message: 'Internal Server Error' });
     }
 };
 
@@ -40,10 +82,10 @@ exports.addSparepart = async (req, res) => {
         // Tambah suku cadang baru ke database
         const uuid = await Sparepart.create(newSparepart);
 
-        res.status(201).json({ message: 'Sparepart added successfully', uuid });
+        res.status(201).json({ code: 201, status: 'success', message: 'Sparepart added successfully', uuid });
     } catch (error) {
         console.error('Error adding sparepart:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ code: 500, status: 'error', message: 'Internal Server Error' });
     }
 };
 
@@ -55,10 +97,10 @@ exports.addSparepartsBulk = async (req, res) => {
         // Tambah suku cadang secara massal ke database
         const result = await Sparepart.addBulkSpareparts(bulkSpareparts);
 
-        res.status(201).json({ message: 'Spareparts added successfully', result });
+        res.status(201).json({ code: 201, status: 'success', message: 'Spareparts added successfully', result });
     } catch (error) {
         console.error('Error adding spareparts in bulk:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ code: 500, status: 'error', message: 'Internal Server Error' });
     }
 };
 
@@ -72,13 +114,13 @@ exports.editSparepart = async (req, res) => {
         const success = await Sparepart.update(uuid, updates);
 
         if (success) {
-            res.json({ message: 'Sparepart updated successfully' });
+            res.json({ code: 200, status: 'success', message: 'Sparepart updated successfully' });
         } else {
-            res.status(404).json({ error: 'Sparepart not found' });
+            res.status(404).json({ code: 404, status: 'error', message: 'Sparepart not found' });
         }
     } catch (error) {
         console.error('Error editing sparepart:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ code: 500, status: 'error', message: 'Internal Server Error' });
     }
 };
 
@@ -91,13 +133,13 @@ exports.deleteSparepart = async (req, res) => {
         const success = await Sparepart.delete(uuid);
 
         if (success) {
-            res.json({ message: 'Sparepart deleted successfully' });
+            res.json({ code: 200, status: 'success', message: 'Sparepart deleted successfully' });
         } else {
             res.status(404).json({ error: 'Sparepart not found' });
         }
     } catch (error) {
         console.error('Error deleting sparepart:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ code: 500, status: 'error', message: 'Internal Server Error' });
     }
 };
 
@@ -107,9 +149,9 @@ exports.getAllSparepartTypes = async (req, res) => {
         // Ambil semua jenis suku cadang dari database
         const types = await Sparepart.getAllTypes();
 
-        res.json(types);
+        res.json({ code: 200, status: 'success', data: types });
     } catch (error) {
         console.error('Error fetching sparepart types:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ code: 500, status: 'error', message: 'Internal Server Error' });
     }
 };

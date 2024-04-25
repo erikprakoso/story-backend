@@ -39,6 +39,13 @@ class Sparepart {
         const result = await query(sql, [uuid]);
         return result.affectedRows > 0;
     }
+
+    // Method untuk menambah suku cadang secara massal ke database
+    static async addBulkSpareparts(spareparts) {
+        const sql = 'INSERT INTO sparepart (partnumber, name, uuid_sparepart_type, quantity, price, garage_price, install_price, shelf_location) VALUES ?';
+        const result = await query(sql, [spareparts]);
+        return result.affectedRows;
+    }
 }
 
 module.exports = Sparepart;
