@@ -1,14 +1,16 @@
 const { query } = require('./db');
+const { v4: uuidv4 } = require('uuid');
 
 class SparepartType {
     // Method untuk menambah tipe suku cadang ke database
     static async create(type) {
         const { name } = type;
+        const uuid = uuidv4();
         const sql = `
-            INSERT INTO sparepart_type (name, created_at, updated_at)
-            VALUES (?, NOW(), NOW())
+            INSERT INTO sparepart_type (uuid, name)
+            VALUES (?, ?)
         `;
-        const result = await query(sql, [name]);
+        const result = await query(sql, [uuid, name]);
         return result.insertId;
     }
 
@@ -17,7 +19,7 @@ class SparepartType {
         const { name } = updates;
         const sql = `
             UPDATE sparepart_type
-            SET name = ?, updated_at = NOW()
+            SET name = ?
             WHERE uuid = ?
         `;
         const result = await query(sql, [name, uuid]);

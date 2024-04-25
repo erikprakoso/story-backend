@@ -1,14 +1,14 @@
 const express = require('express');
-const authRoutes = require('./routes/authRoutes');
-const userRoutes = require('./routes/userRoutes');
-const sparepartRoutes = require('./routes/sparepartRoutes');
-const restockRoutes = require('./routes/restockRoutes');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const dotenv = require('dotenv'); // Jika Anda menggunakan dotenv untuk mengakses variabel lingkungan
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
-
+const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
+const sparepartRoutes = require('./routes/sparepartRoutes');
+const restockRoutes = require('./routes/restockRoutes');
+const sparepartTypeRoutes = require('./routes/sparepartTypeRoutes');
 
 // Inisialisasi Express
 const app = express();
@@ -42,6 +42,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/spareparts', sparepartRoutes);
 app.use('/api/v1/restocks', restockRoutes);
+app.use('/api/v1/sparepart-types', sparepartTypeRoutes);
 
 // Menjalankan server Express
 const port = process.env.PORT || 3000;
