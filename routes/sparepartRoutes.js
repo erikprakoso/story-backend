@@ -24,7 +24,4 @@ router.put('/edit/:uuid', authMiddleware, SparepartController.editSparepart);
 // Rute untuk menghapus sparepart berdasarkan UUID
 router.delete('/delete/:uuid', authMiddleware, SparepartController.deleteSparepart);
 
-// Rute untuk melihat semua jenis sparepart
-router.get('/type', authMiddleware, SparepartController.getAllSparepartTypes);
-
 module.exports = router;

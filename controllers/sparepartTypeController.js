@@ -53,16 +53,3 @@ exports.deleteSparepartType = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
-
-// Controller untuk melihat semua tipe suku cadang
-exports.getAllSparepartTypes = async (req, res) => {
-    try {
-        // Ambil semua tipe suku cadang dari database
-        const types = await SparepartType.getAllTypes();
-
-        res.json(types);
-    } catch (error) {
-        console.error('Error fetching sparepart types:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-};
