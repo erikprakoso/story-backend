@@ -1,12 +1,12 @@
-const SparepartMotorType = require('../models/sparepartMotorType');
+const MotorType = require('../models/motorType');
 
 // Controller untuk menambah jenis suku cadang motor baru
-exports.addSparepartMotorType = async (req, res) => {
+exports.addMotorType = async (req, res) => {
     try {
         const { name } = req.body;
         
         // Tambah jenis suku cadang motor baru ke database
-        const uuid = await SparepartMotorType.create({ name });
+        const uuid = await MotorType.create( name );
 
         res.status(201).json({code: 201, status: 'success', message: 'Sparepart motor type added successfully', uuid});
     } catch (error) {
@@ -16,13 +16,13 @@ exports.addSparepartMotorType = async (req, res) => {
 };
 
 // Controller untuk mengedit informasi jenis suku cadang motor
-exports.editSparepartMotorType = async (req, res) => {
+exports.editMotorType = async (req, res) => {
     try {
         const { uuid } = req.params;
         const { name } = req.body;
 
         // Perbarui informasi jenis suku cadang motor berdasarkan UUID
-        const success = await SparepartMotorType.update(uuid, { name });
+        const success = await MotorType.update(uuid, { name });
 
         if (success) {
             res.json({ code: 200, status: 'success', message: 'Sparepart motor type updated successfully' });
@@ -36,12 +36,12 @@ exports.editSparepartMotorType = async (req, res) => {
 };
 
 // Controller untuk menghapus jenis suku cadang motor
-exports.deleteSparepartMotorType = async (req, res) => {
+exports.deleteMotorType = async (req, res) => {
     try {
         const { uuid } = req.params;
 
         // Hapus jenis suku cadang motor berdasarkan UUID
-        const success = await SparepartMotorType.delete(uuid);
+        const success = await MotorType.delete(uuid);
 
         if (success) {
             res.json({ code: 200, status: 'success', message: 'Sparepart motor type deleted successfully' });
@@ -55,10 +55,10 @@ exports.deleteSparepartMotorType = async (req, res) => {
 };
 
 // Controller untuk melihat semua jenis suku cadang motor
-exports.getAllSparepartMotorTypes = async (req, res) => {
+exports.getAllMotorTypes = async (req, res) => {
     try {
         // Ambil semua jenis suku cadang motor dari database
-        const types = await SparepartMotorType.getAllTypes();
+        const types = await MotorType.getAllTypes();
 
         if (types.length === 0) {
             return res.status(404).json({ code: 404, status: 'error', message: 'Sparepart motor types not found' });

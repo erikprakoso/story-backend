@@ -9,7 +9,7 @@ const userRoutes = require('./routes/userRoutes');
 const sparepartRoutes = require('./routes/sparepartRoutes');
 const restockRoutes = require('./routes/restockRoutes');
 const sparepartTypeRoutes = require('./routes/sparepartTypeRoutes');
-const sparepartMotorTypeRoutes = require('./routes/sparepartMotorTypeRoutes');
+const motorTypeRoutes = require('./routes/motorTypeRoutes');
 
 // Inisialisasi Express
 const app = express();
@@ -44,7 +44,7 @@ app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/spareparts', sparepartRoutes);
 app.use('/api/v1/restocks', restockRoutes);
 app.use('/api/v1/sparepart-types', sparepartTypeRoutes);
-app.use('/api/v1/sparepart-motor-types', sparepartMotorTypeRoutes);
+app.use('/api/v1/motor-types', motorTypeRoutes);
 
 // Menjalankan server Express
 const port = process.env.PORT || 3000;

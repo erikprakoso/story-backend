@@ -1,5 +1,6 @@
 const Sparepart = require('../models/sparepart');
 const { query } = require('../models/db');
+const SparepartDetail = require('../models/sparepartDetail');
 
 // Controller for viewing all spare parts with pagination, search, and filtering
 exports.getAllSpareparts = async (req, res) => {
@@ -78,8 +79,58 @@ exports.addSparepart = async (req, res) => {
     try {
         const newSparepart = req.body;
 
+        const { partnumber, name, uuid_sparepart_type, quantity, price, garage_price, install_price, shelf_location, motor_type } = newSparepart;
+
+        // Validasi data yang diterima
+        if (!partnumber) {
+            return res.status(400).json({ code: 400, status: 'error', message: 'Partnumber is required' });
+        }
+
+        if (!name) {
+            return res.status(400).json({ code: 400, status: 'error', message: 'Name is required' });
+        }
+
+        if (!shelf_location) {
+            return res.status(400).json({ code: 400, status: 'error', message: 'Shelf location is required' });
+        }
+
+        const addSparepart = {
+            partnumber,
+            name,
+            uuid_sparepart_type,
+            quantity,
+            price,
+            garage_price,
+            install_price,
+            shelf_location
+        };
+
         // Tambah suku cadang baru ke database
-        const uuid = await Sparepart.create(newSparepart);
+        const uuid = await Sparepart.create(addSparepart);
+
+        if (!uuid) {
+            return res.status(500).json({ code: 500, status: 'error', message: 'Failed to add sparepart' });
+        }
+        
+        if (Array.isArray(motor_type) && motor_type.length > 0) {
+
+            // Tambahkan jenis motor yang mendukung suku cadang ini
+            const addSparepartDetail = motor_type.map((type) => {
+                const data = { uuid_sparepart: uuid, uuid_motor_type: type };
+
+                SparepartDetail.create(data)
+                    .then((result) => {
+                        console.log('Added sparepart detail:', result);
+                    }
+                );
+            });
+        
+            // Handle error if adding sparepart detail fails
+            if (!addSparepartDetail) {
+                return res.status(500).json({ code: 500, status: 'error', message: 'Failed to add sparepart detail' });
+            }
+        }
+        
 
         res.status(201).json({ code: 201, status: 'success', message: 'Sparepart added successfully', uuid });
     } catch (error) {
