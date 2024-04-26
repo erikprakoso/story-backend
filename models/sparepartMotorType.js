@@ -1,19 +1,18 @@
 const db = require('./db');
 const { v4: uuidv4 } = require('uuid');
 
-class SparepartType {
+class SparepartMotorType {
     constructor(uuid, name) {
         this.uuid = uuid;
         this.name = name;
     }
 
-    // Method untuk menambah tipe suku cadang ke database
-    static async create(type) {
+    static async create(name) {
         return new Promise((resolve, reject) => {
             const uuid = uuidv4();
             db.query(
-                'INSERT INTO sparepart_type (uuid, name) VALUES (?, ?)',
-                [uuid, type],
+                'INSERT INTO sparepart_motor_type (uuid, name) VALUES (?, ?)',
+                [uuid, name],
                 (error, results) => {
                     if (error) {
                         reject(error);
@@ -25,12 +24,11 @@ class SparepartType {
         });
     }
 
-    // Method untuk memperbarui tipe suku cadang berdasarkan UUID
     static async update(uuid, updates) {
         return new Promise((resolve, reject) => {
             const { name } = updates;
             db.query(
-                'UPDATE sparepart_type SET name = ? WHERE uuid = ?',
+                'UPDATE sparepart_motor_type SET name = ? WHERE uuid = ?',
                 [name, uuid],
                 (error, results) => {
                     if (error) {
@@ -43,11 +41,10 @@ class SparepartType {
         });
     }
 
-    // Method untuk menghapus tipe suku cadang berdasarkan UUID
     static async delete(uuid) {
         return new Promise((resolve, reject) => {
             db.query(
-                'DELETE FROM sparepart_type WHERE uuid = ?',
+                'DELETE FROM sparepart_motor_type WHERE uuid = ?',
                 [uuid],
                 (error, results) => {
                     if (error) {
@@ -60,10 +57,9 @@ class SparepartType {
         });
     }
 
-    // Method untuk mengambil semua tipe suku cadang dari database
     static async getAllTypes() {
         return new Promise((resolve, reject) => {
-            db.query('SELECT uuid, name FROM sparepart_type', (error, results) => {
+            db.query('SELECT uuid, name FROM sparepart_motor_type', (error, results) => {
                 if (error) {
                     reject(error);
                 } else {
@@ -74,4 +70,4 @@ class SparepartType {
     }
 }
 
-module.exports = SparepartType;
+module.exports = SparepartMotorType;

@@ -64,8 +64,7 @@ exports.getSparepartById = async (req, res) => {
         const sparepart = await Sparepart.getById(uuid);
 
         if (sparepart) {
-            res.json(sparepart);
-        } else {
+        res.json({ code: 200, status: 'success', message: 'Sparepart found', data: sparepart });
             res.status(404).json({ code: 404, status: 'error', message: 'Sparepart not found' });
         }
     } catch (error) {
