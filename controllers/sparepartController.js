@@ -1,6 +1,9 @@
 const Sparepart = require('../models/sparepart');
 const { query } = require('../models/db');
 const SparepartDetail = require('../models/sparepartDetail');
+const xlsx = require('xlsx');
+const csv = require('csv-parser');
+const fs = require('fs');
 
 // Controller for viewing all spare parts with pagination, search, and filtering
 exports.getAllSpareparts = async (req, res) => {
@@ -72,14 +75,21 @@ exports.getSparepartById = async (req, res) => {
         // Ambil suku cadang berdasarkan UUID
         const sparepart = await Sparepart.getById(uuid);
 
+        if (!sparepart) {
+            return res.status(404).json({ code: 404, status: 'error', message: 'Sparepart not found' });
+        }
+
         const motorTypes = await SparepartDetail.getDetailsBySparepart(uuid);
+
+        if (!motorTypes) {
+            return res.status(500).json({ code: 500, status: 'error', message: 'Failed to get motor types' });
+        }
 
         // Tambahkan jenis motor yang mendukung suku cadang ini ke property 'motor_types
         sparepart.motor_types = motorTypes;
 
         if (sparepart) {
             res.json({ code: 200, status: 'success', message: 'Sparepart found', data: sparepart });
-            res.status(404).json({ code: 404, status: 'error', message: 'Sparepart not found' });
         }
     } catch (error) {
         console.error('Error fetching sparepart:', error);
@@ -155,12 +165,95 @@ exports.addSparepart = async (req, res) => {
 // Controller untuk menambah suku cadang secara massal dari file
 exports.addSparepartsBulk = async (req, res) => {
     try {
-        const bulkSpareparts = req.body;
+        // Mendapatkan path berkas yang diunggah
+        const filePath = req.file.path;
+        const fileExt = req.file.originalname.split('.').pop().toLowerCase();
 
-        // Tambah suku cadang secara massal ke database
-        const result = await Sparepart.addBulkSpareparts(bulkSpareparts);
+        // Jika berkas adalah Excel
+        if (fileExt === 'xlsx' || fileExt === 'xls') {
+            // Baca berkas Excel
+            const workbook = xlsx.readFile(filePath);
+            const sheetNames = workbook.SheetNames;
+            const firstSheetName = sheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const jsonData = xlsx.utils.sheet_to_json(worksheet);
 
-        res.status(201).json({ code: 201, status: 'success', message: 'Spareparts added successfully', result });
+            console.log('Data from Excel:', jsonData);
+
+            if (jsonData.length === 0) {
+                return res.status(400).json({ code: 400, status: 'error', message: 'No data found in Excel file' });
+            }
+
+            const entryPromises = jsonData.map((entry) => {
+                const { partnumber, name, quantity, price, garage_price, install_price, shelf_location, motor_type } = entry;
+
+                const addSparepart = {
+                    partnumber,
+                    name,
+                    quantity,
+                    price,
+                    garage_price,
+                    install_price,
+                    shelf_location
+                };
+
+                // Tambahkan suku cadang baru ke database
+                return Sparepart.create(addSparepart)
+                    .then((uuid) => {
+                        console.log('Added sparepart:', uuid);
+                    });
+            });
+
+            // Tunggu sampai semua operasi selesai
+            await Promise.all(entryPromises);
+
+            // Hapus berkas yang diunggah
+            fs.unlinkSync(filePath);
+
+            res.json({ code: 200, status: 'success', message: 'Spareparts added successfully' });
+
+            // Jika berkas adalah CSV
+        } else if (fileExt === 'csv') {
+            const results = [];
+
+            fs.createReadStream(filePath)
+                .pipe(csv())
+                .on('data', (data) => results.push(data))
+                .on('end', () => {
+                    // Sekarang, `results` berisi data dari berkas CSV yang dapat Anda proses dan tambahkan ke database sesuai dengan kebutuhan Anda
+                    console.log('Data from CSV:', results);
+
+                    // Simpan data ke database
+                    results.forEach((entry) => {
+                        const { partnumber, name, quantity, price, garage_price, install_price, shelf_location } = entry;
+
+                        const addSparepart = {
+                            partnumber,
+                            name,
+                            quantity,
+                            price,
+                            garage_price,
+                            install_price,
+                            shelf_location
+                        };
+
+                        // Tambahkan suku cadang baru ke database
+                        Sparepart.create(addSparepart)
+                            .then((uuid) => {
+                                console.log('Added sparepart:', uuid);
+                            });
+                    });
+
+                    // Hapus berkas yang diunggah
+                    fs.unlinkSync(filePath);
+
+                    res.json({ code: 200, status: 'success', message: 'Spareparts added successfully' });
+                });
+
+        } else {
+            // Berkas tidak didukung
+            return res.status(400).json({ code: 400, status: 'error', message: 'Unsupported file format' });
+        }
     } catch (error) {
         console.error('Error adding spareparts in bulk:', error);
         res.status(500).json({ code: 500, status: 'error', message: 'Internal Server Error' });
@@ -173,14 +266,66 @@ exports.editSparepart = async (req, res) => {
         const { uuid } = req.params;
         const updates = req.body;
 
-        // Perbarui informasi suku cadang berdasarkan UUID
-        const success = await Sparepart.update(uuid, updates);
+        const { partnumber, name, uuid_sparepart_type, quantity, price, garage_price, install_price, shelf_location, motor_type } = updates;
 
-        if (success) {
-            res.json({ code: 200, status: 'success', message: 'Sparepart updated successfully' });
-        } else {
-            res.status(404).json({ code: 404, status: 'error', message: 'Sparepart not found' });
+        // Validasi data yang diterima
+        if (!partnumber) {
+            return res.status(400).json({ code: 400, status: 'error', message: 'Partnumber is required' });
         }
+
+        if (!name) {
+            return res.status(400).json({ code: 400, status: 'error', message: 'Name is required' });
+        }
+
+        if (!shelf_location) {
+            return res.status(400).json({ code: 400, status: 'error', message: 'Shelf location is required' });
+        }
+
+        const updateSparepart = {
+            partnumber,
+            name,
+            uuid_sparepart_type,
+            quantity,
+            price,
+            garage_price,
+            install_price,
+            shelf_location
+        };
+
+        // Perbarui informasi suku cadang berdasarkan UUID
+        const success = await Sparepart.update(uuid, updateSparepart);
+
+        if (!success) {
+            return res.status(500).json({ code: 500, status: 'error', message: 'Failed to update sparepart' });
+        }
+
+        if (Array.isArray(motor_type) && motor_type.length > 0) {
+
+            // Hapus semua jenis motor yang mendukung suku cadang ini
+            const deleteSparepartDetail = await SparepartDetail.deleteBySparepart(uuid);
+
+            if (!deleteSparepartDetail) {
+                return res.status(500).json({ code: 500, status: 'error', message: 'Failed to delete sparepart detail' });
+            }
+
+            // Tambahkan jenis motor yang mendukung suku cadang ini
+            const addSparepartDetail = motor_type.map((type) => {
+                const data = { uuid_sparepart: uuid, uuid_motor_type: type };
+
+                SparepartDetail.create(data)
+                    .then((result) => {
+                        console.log('Added sparepart detail:', result);
+                    }
+                    );
+            });
+
+            // Handle error if adding sparepart detail fails
+            if (!addSparepartDetail) {
+                return res.status(500).json({ code: 500, status: 'error', message: 'Failed to add sparepart detail' });
+            }
+        }
+
+        res.json({ code: 200, status: 'success', message: 'Sparepart updated successfully' });
     } catch (error) {
         console.error('Error editing sparepart:', error);
         res.status(500).json({ code: 500, status: 'error', message: 'Internal Server Error' });
@@ -192,29 +337,22 @@ exports.deleteSparepart = async (req, res) => {
     try {
         const { uuid } = req.params;
 
+        const deleteSparepartDetail = await SparepartDetail.deleteBySparepart(uuid);
+
+        if (!deleteSparepartDetail) {
+            return res.status(500).json({ code: 500, status: 'error', message: 'Failed to delete sparepart detail' });
+        }
+
         // Hapus suku cadang berdasarkan UUID
         const success = await Sparepart.delete(uuid);
 
-        if (success) {
-            res.json({ code: 200, status: 'success', message: 'Sparepart deleted successfully' });
-        } else {
-            res.status(404).json({ error: 'Sparepart not found' });
+        if (!success) {
+            return res.status(500).json({ code: 500, status: 'error', message: 'Failed to delete sparepart' });
         }
+
+        res.json({ code: 200, status: 'success', message: 'Sparepart deleted successfully' });
     } catch (error) {
         console.error('Error deleting sparepart:', error);
-        res.status(500).json({ code: 500, status: 'error', message: 'Internal Server Error' });
-    }
-};
-
-// Controller untuk melihat semua jenis suku cadang
-exports.getAllSparepartTypes = async (req, res) => {
-    try {
-        // Ambil semua jenis suku cadang dari database
-        const types = await Sparepart.getAllTypes();
-
-        res.json({ code: 200, status: 'success', data: types });
-    } catch (error) {
-        console.error('Error fetching sparepart types:', error);
         res.status(500).json({ code: 500, status: 'error', message: 'Internal Server Error' });
     }
 };

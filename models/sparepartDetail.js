@@ -90,6 +90,23 @@ class SparepartDetail {
         });
     }
 
+    static async deleteBySparepart(uuid_sparepart) {
+        return new Promise((resolve, reject) => {
+            query(
+                'DELETE FROM sparepart_detail WHERE uuid_sparepart = ?',
+                [uuid_sparepart],
+                (error, results) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(results.affectedRows > 0);
+                    }
+                }
+            );
+        });
+    }
+
+
 }
 
 module.exports = SparepartDetail;

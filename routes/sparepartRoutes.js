@@ -2,9 +2,13 @@ const express = require('express');
 const router = express.Router();
 const SparepartController = require('../controllers/sparepartController');
 const authMiddleware = require('../middleware/auth');
+const multer = require('multer');
 
 // Middleware untuk autentikasi atau otorisasi jika diperlukan
 router.use(authMiddleware);
+
+// Konfigurasi multer untuk menangani pengunggahan berkas
+const upload = multer({ dest: 'uploads/' });
 
 // Rute untuk melihat semua sparepart
 router.get('/', SparepartController.getAllSpareparts);
@@ -16,7 +20,7 @@ router.get('/:uuid', SparepartController.getSparepartById);
 router.post('/add', SparepartController.addSparepart);
 
 // Rute untuk menambah sparepart secara massal dari file
-router.post('/add/bulk', SparepartController.addSparepartsBulk);
+router.post('/add/bulk', upload.single('file'), SparepartController.addSparepartsBulk);
 
 // Rute untuk mengedit informasi sparepart berdasarkan UUID
 router.put('/edit/:uuid', SparepartController.editSparepart);
