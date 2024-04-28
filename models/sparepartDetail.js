@@ -106,7 +106,21 @@ class SparepartDetail {
         });
     }
 
-
+    // join sparepart_detail with motor_type
+    static async getDetailsWithMotorType() {
+        return new Promise((resolve, reject) => {
+            query(
+                'SELECT sparepart_detail.uuid_sparepart, sparepart_detail.uuid_motor_type, motor_type.name FROM sparepart_detail INNER JOIN motor_type ON sparepart_detail.uuid_motor_type = motor_type.uuid',
+                (error, results) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(results);
+                    }
+                }
+            );
+        });
+    }
 }
 
 module.exports = SparepartDetail;

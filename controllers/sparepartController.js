@@ -46,8 +46,7 @@ exports.getAllSpareparts = async (req, res) => {
         // Menggunakan Promise.all untuk menunggu hasil dari setiap operasi async
         await Promise.all(spareparts.map(async (sparepart) => {
             const uuid = sparepart.uuid;
-            const motorTypes = await SparepartDetail.getDetailsBySparepart(uuid);
-            console.log('Motor types:', motorTypes);
+            const motorTypes = await SparepartDetail.getDetailsWithMotorType(uuid);
             sparepart.motor_types = motorTypes;
         }));
 
