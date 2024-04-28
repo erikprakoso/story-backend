@@ -76,6 +76,18 @@ class RestockDetail {
         });
     }
 
+    static async deleteByRestock(uuid_restock) {
+        return new Promise((resolve, reject) => {
+            query('DELETE FROM restock_detail WHERE uuid_restock = ?', [uuid_restock], (error, results) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(results.affectedRows > 0);
+                }
+            });
+        });
+    }
+
 }
 
 module.exports = RestockDetail;

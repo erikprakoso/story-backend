@@ -62,6 +62,37 @@ class Restock {
             });
         });
     }
+
+    // Method untuk mengupdate data restock berdasarkan UUID dari database
+    static async update(uuid, restock) {
+        return new Promise((resolve, reject) => {
+            const { uuid_user, date, total_price, is_paid, supplier, phone_number } = restock;
+            query(
+                'UPDATE restock SET uuid_user = ?, date = ?, total_price = ?, is_paid = ?, supplier = ?, phone_number = ?, updated_at = NOW() WHERE uuid = ?',
+                [uuid_user, date, total_price, is_paid, supplier, phone_number, uuid],
+                (error, results) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(results.affectedRows > 0);
+                    }
+                }
+            );
+        });
+    }
+
+    // Method untuk menghapus data restock berdasarkan UUID dari database
+    static async delete(uuid) {
+        return new Promise((resolve, reject) => {
+            query('DELETE FROM restock WHERE uuid = ?', [uuid], (error, results) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(results.affectedRows > 0);
+                }
+            });
+        });
+    }
 }
 
 module.exports = Restock;
