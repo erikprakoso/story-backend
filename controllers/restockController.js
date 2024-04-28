@@ -251,7 +251,7 @@ exports.getAllRestocks = async (req, res) => {
 
         // Menggunakan Promise.all untuk menunggu hasil dari setiap operasi async
         await Promise.all(restocks.map(async (restock) => {
-            const spareparts = await RestockDetail.getDetailsByRestock(restock.uuid);
+            const spareparts = await RestockDetail.getDetailsByRestockWithSparepart(restock.uuid);
 
             if (spareparts.length > 0) {
                 restock.total_sparepart = spareparts.length;
@@ -289,7 +289,7 @@ exports.getRestockById = async (req, res) => {
             return res.status(404).json({ code: 404, status: 'error', message: 'Restock not found' });
         }
 
-        const spareparts = await RestockDetail.getDetailsByRestock(uuid);
+        const spareparts = await RestockDetail.getDetailsByRestockWithSparepart(uuid);
 
         if (spareparts.length > 0) {
             restock.total_sparepart = spareparts.length;

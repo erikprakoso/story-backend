@@ -88,6 +88,23 @@ class RestockDetail {
         });
     }
 
+    // join restock_detail with sparepart
+    static async getDetailsByRestockWithSparepart(uuid_restock) {
+        return new Promise((resolve, reject) => {
+            query(
+                'SELECT rd.*, s.name FROM restock_detail rd JOIN sparepart s ON rd.uuid_sparepart = s.uuid WHERE rd.uuid_restock = ?',
+                [uuid_restock],
+                (error, results) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(results);
+                    }
+                }
+            );
+        });
+    }
+
 }
 
 module.exports = RestockDetail;
