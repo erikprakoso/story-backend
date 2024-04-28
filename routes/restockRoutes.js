@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const RestockController = require('../controllers/restockController');
+const authMiddleware = require('../middleware/auth');
 
 // Middleware untuk autentikasi atau otorisasi jika diperlukan
+router.use(authMiddleware);
 
 // Rute untuk menambah data restock baru
 router.post('/add', RestockController.addRestock);

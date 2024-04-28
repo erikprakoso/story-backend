@@ -1,17 +1,86 @@
 const Restock = require('../models/restock');
+const RestockDetail = require('../models/restockDetail');
 
 // Controller untuk menambah data restock baru
 exports.addRestock = async (req, res) => {
     try {
         const newRestock = req.body;
 
-        // Tambah data restock baru ke database
-        const uuid = await Restock.create(newRestock);
+        const { date, spareparts, total_price, is_paid, supplier, uuid_user } = newRestock;
 
-        res.status(201).json({ message: 'Restock added successfully', uuid });
+        if (!date) {
+            return res.status(400).json({ code: 400, status: 'error', message: 'Date is required' });
+        }
+
+        if (!total_price) {
+            return res.status(400).json({ code: 400, status: 'error', message: 'Total price is required' });
+        }
+
+        if (!is_paid) {
+            return res.status(400).json({ code: 400, status: 'error', message: 'Is paid is required' });
+        }
+
+        if (!supplier) {
+            return res.status(400).json({ code: 400, status: 'error', message: 'Supplier is required' });
+        }
+
+        if (Array.isArray(spareparts)) {
+            if (spareparts.length === 0) {
+                return res.status(400).json({ code: 400, status: 'error', message: 'Spareparts are required' });
+            }
+        }
+
+        if (!uuid_user) {
+            return res.status(400).json({ code: 400, status: 'error', message: 'User is required' });
+        }
+
+        const data = {
+            uuid_user,
+            date,
+            total_price,
+            is_paid,
+            supplier
+        };
+
+        // Tambah data restock baru ke database
+        const uuid = await Restock.create(data);
+
+        if (!uuid) {
+            return res.status(500).json({ code: 500, status: 'error', message: 'Failed to add restock' });
+        }
+
+        // Tambah detail suku cadang pada restock
+        const promises = spareparts.map(async (sparepart) => {
+            const { uuid_sparepart, quantity, buy_price } = sparepart;
+
+            if (!uuid_sparepart) {
+                return res.status(400).json({ code: 400, status: 'error', message: 'Sparepart is required' });
+            }
+
+            if (!quantity) {
+                return res.status(400).json({ code: 400, status: 'error', message: 'Quantity is required' });
+            }
+
+            if (!buy_price) {
+                return res.status(400).json({ code: 400, status: 'error', message: 'Buy price is required' });
+            }
+
+            const detail = {
+                uuid_restock: uuid,
+                uuid_sparepart,
+                quantity,
+                buy_price
+            };
+
+            return RestockDetail.create(detail);
+        });
+
+        await Promise.all(promises);
+
+        res.status(201).json({ code: 201, status: 'success', message: 'Restock added successfully' });
     } catch (error) {
         console.error('Error adding restock:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ code: 500, status: 'error', message: 'Internal Server Error' });
     }
 };
 
