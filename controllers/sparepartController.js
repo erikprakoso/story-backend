@@ -80,7 +80,7 @@ exports.getSparepartById = async (req, res) => {
             return res.status(404).json({ code: 404, status: 'error', message: 'Sparepart not found' });
         }
 
-        const motorTypes = await SparepartDetail.getDetailsBySparepart(uuid);
+        const motorTypes = await SparepartDetail.getDetailsWithMotorType(uuid);
 
         if (!motorTypes) {
             return res.status(500).json({ code: 500, status: 'error', message: 'Failed to get motor types' });
