@@ -75,6 +75,8 @@ exports.getSparepartById = async (req, res) => {
         // Ambil suku cadang berdasarkan UUID
         const sparepart = await Sparepart.getById(uuid);
 
+        console.log(sparepart);
+
         if (!sparepart) {
             return res.status(404).json({ code: 404, status: 'error', message: 'Sparepart not found' });
         }

@@ -54,8 +54,7 @@ class Sparepart {
                     reject(error);
                 } else {
                     if (results.length > 0) {
-                        const { uuid, partnumber, name, uuid_sparepart_type, quantity, price, garage_price, install_price, shelf_location } = results[0];
-                        resolve(new Sparepart(uuid, partnumber, name, uuid_sparepart_type, quantity, price, garage_price, install_price, shelf_location));
+                        resolve(results[0]);
                     } else {
                         resolve(null);
                     }

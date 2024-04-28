@@ -53,8 +53,7 @@ class Restock {
                     reject(error);
                 } else {
                     if (results.length > 0) {
-                        const { uuid, uuid_user, date, total_price, is_paid, supplier, phone_number } = results[0];
-                        resolve(new Restock(uuid, uuid_user, date, total_price, is_paid, supplier, phone_number));
+                        resolve(results[0]);
                     } else {
                         resolve(null);
                     }

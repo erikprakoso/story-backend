@@ -6,7 +6,7 @@ exports.addRestock = async (req, res) => {
     try {
         const newRestock = req.body;
 
-        const { date, spareparts, total_price, is_paid, supplier, uuid_user } = newRestock;
+        const { date, spareparts, total_price, is_paid, supplier, uuid_user, phone_number } = newRestock;
 
         if (!date) {
             return res.status(400).json({ code: 400, status: 'error', message: 'Date is required' });
@@ -34,12 +34,17 @@ exports.addRestock = async (req, res) => {
             return res.status(400).json({ code: 400, status: 'error', message: 'User is required' });
         }
 
+        if (!phone_number) {
+            return res.status(400).json({ code: 400, status: 'error', message: 'Phone number is required' });
+        }
+
         const data = {
             uuid_user,
             date,
             total_price,
             is_paid,
-            supplier
+            supplier,
+            phone_number
         };
 
         // Tambah data restock baru ke database
@@ -218,11 +223,20 @@ exports.getRestockById = async (req, res) => {
         // Ambil data restock berdasarkan UUID
         const restock = await Restock.getById(uuid);
 
-        if (restock) {
-            res.json(restock);
-        } else {
-            res.status(404).json({ error: 'Restock not found' });
+        console.log(restock);
+
+        if (!restock) {
+            return res.status(404).json({ code: 404, status: 'error', message: 'Restock not found' });
         }
+
+        const spareparts = await RestockDetail.getDetailsByRestock(uuid);
+
+        if (spareparts.length > 0) {
+            restock.total_sparepart = spareparts.length;
+            restock.spareparts = spareparts;
+        }
+
+        res.json({ code: 200, status: 'success', data: restock });
     } catch (error) {
         console.error('Error fetching restock:', error);
         res.status(500).json({ error: 'Internal Server Error' });
