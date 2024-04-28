@@ -21,4 +21,7 @@ router.get('/', SalesController.getAllSales);
 // Rute untuk melihat detail sales berdasarkan UUID
 router.get('/:uuid', SalesController.getSalesById);
 
+// Rute untuk merubah status pembayaran sales berdasarkan UUID
+router.put('/paid/:uuid', SalesController.updateIsPaid);
+
 module.exports = router;

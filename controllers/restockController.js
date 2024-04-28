@@ -309,7 +309,7 @@ exports.getRestockSpareparts = async (req, res) => {
         const { uuid } = req.params;
 
         // Ambil detail suku cadang pada restock berdasarkan UUID restock
-        const spareparts = await Restock.getDetails(uuid);
+        const spareparts = await RestockDetail.getDetailsBySparepartWithRestockAndSparepart(uuid);
 
         if (!spareparts) {
             return res.status(404).json({ code: 404, status: 'error', message: 'Spareparts not found' });

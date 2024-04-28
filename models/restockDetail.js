@@ -105,6 +105,40 @@ class RestockDetail {
         });
     }
 
+    // join restock_detail with sparepart using uuid_sparepart
+    static async getDetailsBySparepartWithRestock(uuid_sparepart) {
+        return new Promise((resolve, reject) => {
+            query(
+                'SELECT rd.*, r.date FROM restock_detail rd JOIN restock r ON rd.uuid_restock = r.uuid WHERE rd.uuid_sparepart = ?',
+                [uuid_sparepart],
+                (error, results) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(results);
+                    }
+                }
+            );
+        });
+    }
+
+    // join restock_detail with sparepart using uuid_sparepart and join with restock using uuid_restock
+    static async getDetailsBySparepartWithRestockAndSparepart(uuid_sparepart) {
+        return new Promise((resolve, reject) => {
+            query(
+                'SELECT rd.*, r.date, r.supplier, s.name AS sparepart_name FROM restock_detail rd JOIN restock r ON rd.uuid_restock = r.uuid JOIN sparepart s ON rd.uuid_sparepart = s.uuid WHERE rd.uuid_sparepart = ?',
+                [uuid_sparepart],
+                (error, results) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(results);
+                    }
+                }
+            );
+        });
+    }
+
 }
 
 module.exports = RestockDetail;

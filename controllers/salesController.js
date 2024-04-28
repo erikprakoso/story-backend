@@ -344,3 +344,26 @@ exports.getSalesById = async (req, res) => {
         return res.status(500).send({ code: 500, status: 'error', message: 'Internal server error' });
     }
 }
+
+exports.updateIsPaid = async (req, res) => {
+    try {
+        const { uuid } = req.params;
+        const { is_paid } = req.body;
+
+        if (is_paid === undefined) {
+            return res.status(400).send({ code: 400, status: 'error', message: 'Is paid is required' });
+        }
+
+        const updated = await Sales.updateIsPaid(uuid, is_paid);
+
+        if (!updated) {
+            return res.status(500).send({ code: 500, status: 'error', message: 'Internal server error' });
+        }
+
+        return res.status(200).send({ code: 200, status: 'success', message: 'Is paid status has been updated' });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({ code: 500, status: 'error', message: 'Internal server error' });
+    }
+}
