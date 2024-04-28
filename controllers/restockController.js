@@ -1,5 +1,6 @@
 const Restock = require('../models/restock');
 const RestockDetail = require('../models/restockDetail');
+const { query } = require('../models/db');
 
 // Controller untuk menambah data restock baru
 exports.addRestock = async (req, res) => {
@@ -95,7 +96,7 @@ exports.editRestock = async (req, res) => {
         const { uuid } = req.params;
         const updates = req.body;
 
-        const { date, spareparts, total_price, is_paid, supplier, uuid_user } = updates; 
+        const { date, spareparts, total_price, is_paid, supplier, uuid_user } = updates;
 
         if (!date) {
             return res.status(400).json({ code: 400, status: 'error', message: 'Date is required' });
@@ -205,10 +206,69 @@ exports.deleteRestock = async (req, res) => {
 // Controller untuk melihat semua data restock
 exports.getAllRestocks = async (req, res) => {
     try {
-        // Ambil semua data restock dari database
-        const restocks = await Restock.getAll();
+        const { page, limit, search, month, year, day } = req.query;
 
-        res.json(restocks);
+        let conditions = [];
+
+        // Membuat array untuk menyimpan kondisi-kondisi SQL
+        let sqlConditions = [];
+
+        // Menambahkan kondisi pencarian jika ada parameter 'search'
+        if (search) {
+            sqlConditions.push(`supplier LIKE '%${search}%'`);
+        }
+
+        // Menambahkan kondisi pencarian berdasarkan bulan
+        if (month) {
+            sqlConditions.push(`EXTRACT(MONTH FROM date) = ${parseInt(month)}`);
+        }
+
+        // Menambahkan kondisi pencarian berdasarkan tahun
+        if (year) {
+            sqlConditions.push(`EXTRACT(YEAR FROM date) = ${parseInt(year)}`);
+        }
+
+        // Menambahkan kondisi pencarian berdasarkan hari
+        if (day) {
+            sqlConditions.push(`EXTRACT(DAY FROM date) = ${parseInt(day)}`);
+        }
+
+        // Menggabungkan kondisi-kondisi SQL menjadi sebuah string
+        if (sqlConditions.length > 0) {
+            conditions.push(`WHERE ${sqlConditions.join(' AND ')}`);
+        }
+
+        // Menghitung jumlah total Restock
+        const countQuery = `SELECT COUNT(*) AS total FROM restock ${conditions.join(' ')}`;
+
+        const totalCountResult = await query(countQuery);
+        const totalCount = totalCountResult[0].total;
+
+        // Menyiapkan query untuk mengambil data restock dengan pagination
+        const offset = (page - 1) * limit;
+        const restockQuery = `SELECT * FROM restock ${conditions.join(' ')} ORDER BY date DESC LIMIT ${limit} OFFSET ${offset}`;
+        const restocks = await query(restockQuery);
+
+        // Menggunakan Promise.all untuk menunggu hasil dari setiap operasi async
+        await Promise.all(restocks.map(async (restock) => {
+            const spareparts = await RestockDetail.getDetailsByRestock(restock.uuid);
+
+            if (spareparts.length > 0) {
+                restock.total_sparepart = spareparts.length;
+                restock.spareparts = spareparts;
+            }
+        }
+        ));
+
+        res.json({
+            code: 200, status: 'success', data: restocks,
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalItems: totalCount,
+                totalPages: Math.ceil(totalCount / limit)
+            }
+        });
     } catch (error) {
         console.error('Error fetching restocks:', error);
         res.status(500).json({ error: 'Internal Server Error' });
