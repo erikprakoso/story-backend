@@ -295,7 +295,7 @@ exports.getAllSales = async (req, res) => {
 
         // Menggunakan Promise.all untuk menunggu hasil dari setiap operasi async
         await Promise.all(sales.map(async sale => {
-            const details = await SalesDetail.getBySales(sale.uuid);
+            const details = await SalesDetail.getDetailsBySalesWithSparepart(sale.uuid);
 
             if (details.length > 0) {
                 sale.details = details;
@@ -323,11 +323,15 @@ exports.getSalesById = async (req, res) => {
         const { uuid } = req.params;
         const sales = await Sales.getById(uuid);
 
+        console.log(sales);
+
         if (!sales) {
             return res.status(404).send({ code: 404, status: 'error', message: 'Sales not found' });
         }
 
-        const details = await SalesDetail.getBySales(uuid);
+        const details = await SalesDetail.getDetailsBySalesWithSparepart(uuid);
+
+        console.log(details);
 
         if (details.length > 0) {
             sales.details = details;

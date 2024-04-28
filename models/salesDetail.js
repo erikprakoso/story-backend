@@ -80,6 +80,23 @@ class SalesDetail {
             });
         });
     }
+
+    // join sales_detail with sparepart
+    static async getDetailsBySalesWithSparepart(uuid_sparepart) {
+        return new Promise((resolve, reject) => {
+            query(
+                'SELECT sd.*, s.name FROM sales_detail sd JOIN sparepart s ON sd.uuid_sparepart = s.uuid WHERE sd.uuid_sales = ?',
+                [uuid_sparepart],
+                (error, results) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(results);
+                    }
+                }
+            );
+        });
+    }
 }
 
 module.exports = SalesDetail;
