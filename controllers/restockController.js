@@ -271,7 +271,7 @@ exports.getAllRestocks = async (req, res) => {
         });
     } catch (error) {
         console.error('Error fetching restocks:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ code: 500, status: 'error', message: 'Internal Server Error' });
     }
 };
 
@@ -299,7 +299,7 @@ exports.getRestockById = async (req, res) => {
         res.json({ code: 200, status: 'success', data: restock });
     } catch (error) {
         console.error('Error fetching restock:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ code: 500, status: 'error', message: 'Internal Server Error' });
     }
 };
 
@@ -309,11 +309,15 @@ exports.getRestockSpareparts = async (req, res) => {
         const { uuid } = req.params;
 
         // Ambil detail suku cadang pada restock berdasarkan UUID restock
-        const spareparts = await Restock.getSpareparts(uuid);
+        const spareparts = await Restock.getDetails(uuid);
 
-        res.json(spareparts);
+        if (!spareparts) {
+            return res.status(404).json({ code: 404, status: 'error', message: 'Spareparts not found' });
+        }
+
+        res.json({ code: 200, status: 'success', data: spareparts });
     } catch (error) {
         console.error('Error fetching restock spareparts:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ code: 500, status: 'error', message: 'Internal Server Error' });
     }
 };

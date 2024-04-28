@@ -92,6 +92,23 @@ class Restock {
             });
         });
     }
+
+    // Method untuk mengambil semua data restock, detail restock dan sparepart berdasarkan uuid restock dari database
+    static async getDetails(uuid) {
+        return new Promise((resolve, reject) => {
+            query(
+                'SELECT r.uuid, r.uuid_user, r.date, r.total_price, r.is_paid, r.supplier, r.phone_number, rd.uuid_sparepart, rd.quantity, s.name, s.price FROM restock r INNER JOIN restock_detail rd ON r.uuid = rd.uuid_restock INNER JOIN sparepart s ON rd.uuid_sparepart = s.uuid WHERE r.uuid = ?',
+                [uuid],
+                (error, results) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(results);
+                    }
+                }
+            );
+        });
+    }
 }
 
 module.exports = Restock;
