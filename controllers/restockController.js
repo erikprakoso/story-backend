@@ -176,17 +176,24 @@ exports.deleteRestock = async (req, res) => {
     try {
         const { uuid } = req.params;
 
+        // Hapus detail suku cadang pada restock berdasarkan UUID
+        const restockDetail = RestockDetail.deleteByRestock(uuid);
+
+        if (!restockDetail) {
+            return res.status(500).json({ code: 500, status: 'error', message: 'Failed to delete restock detail' });
+        }
+
         // Hapus restock berdasarkan UUID
         const success = await Restock.delete(uuid);
 
-        if (success) {
-            res.json({ message: 'Restock deleted successfully' });
-        } else {
-            res.status(404).json({ error: 'Restock not found' });
+        if (!success) {
+            return res.status(500).json({ code: 500, status: 'error', message: 'Failed to delete restock' });
         }
+
+        res.json({ code: 200, status: 'success', message: 'Restock deleted successfully' });
     } catch (error) {
         console.error('Error deleting restock:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ code: 500, status: 'error', message: 'Internal Server Error' });
     }
 };
 
