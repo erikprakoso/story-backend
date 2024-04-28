@@ -24,4 +24,7 @@ router.get('/:uuid', RestockController.getRestockById);
 // Rute untuk melihat detail sparepart pada restock berdasarkan UUID restock
 router.get('/sparepart/:uuid', RestockController.getRestockSpareparts);
 
+// Rute untuk merubah status pembayaran restock berdasarkan UUID
+router.put('/paid/:uuid', RestockController.updateIsPaid);
+
 module.exports = router;

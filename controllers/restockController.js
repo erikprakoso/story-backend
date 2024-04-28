@@ -321,3 +321,27 @@ exports.getRestockSpareparts = async (req, res) => {
         res.status(500).json({ code: 500, status: 'error', message: 'Internal Server Error' });
     }
 };
+
+exports.updateIsPaid = async (req, res) => {
+    try {
+        const { uuid } = req.params;
+        const { is_paid } = req.body;
+
+        if (is_paid === undefined) {
+            return res.status(400).json({ code: 400, status: 'error', message: 'Is paid is required' });
+        }
+
+        const success = await Restock.updateIsPaid(uuid, is_paid);
+
+        console.log(success);
+
+        if (!success) {
+            return res.status(500).json({ code: 500, status: 'error', message: 'Failed to update is paid' });
+        }
+
+        res.json({ code: 200, status: 'success', message: 'Is paid updated successfully' });
+    } catch (error) {
+        console.error('Error updating is paid:', error);
+        res.status(500).json({ code: 500, status: 'error', message: 'Internal Server Error' });
+    }
+}

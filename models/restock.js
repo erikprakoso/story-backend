@@ -109,6 +109,23 @@ class Restock {
             );
         });
     }
+
+    // Method untuk merubah status is_paid restock berdasarkan UUID dari database
+    static async updateIsPaid(uuid, is_paid) {
+        return new Promise((resolve, reject) => {
+            query(
+                'UPDATE restock SET is_paid = ?, updated_at = NOW() WHERE uuid = ?',
+                [is_paid, uuid],
+                (error, results) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(results.affectedRows > 0);
+                    }
+                }
+            );
+        });
+    }
 }
 
 module.exports = Restock;
