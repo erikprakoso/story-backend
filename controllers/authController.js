@@ -1,4 +1,3 @@
-const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const User = require('../models/user');
 const dotenv = require('dotenv');
@@ -8,6 +7,8 @@ dotenv.config();
 
 exports.login = async (req, res) => {
     const { username, password } = req.body;
+
+    console.log('Login request:', username, password);
 
     try {
         // Find user by username
@@ -33,17 +34,17 @@ exports.login = async (req, res) => {
             });
         }
 
-        // Generate JWT token
-        const token = jwt.sign({ userId: user.uuid, username: user.username }, process.env.JWT_SECRET, {
-            expiresIn: '18h', // Token expires in 1 hour
-        });
-
         res.json({
             code: 200,
             status: 'success',
             message: 'Login successful',
-            token,
-            user: { uuid: user.uuid, username: user.username, rolename: user.rolename }
+            data: {
+                id: user.id,
+                firstname: user.firstname,
+                lastname: user.lastname,
+                username: user.username,
+                email: user.email
+            }
         });
     } catch (error) {
         console.error('Login error:', error);
@@ -55,47 +56,134 @@ exports.login = async (req, res) => {
     }
 };
 
-exports.logout = async (req, res) => {
-    // remove jwt token from client
-    res.json({
-        code: 200,
-        status: 'success',
-        message: 'Logout successful'
-    });
-};
-
-exports.resetPassword = async (req, res) => {
-    const { uuid } = req.params;
-    const { newPassword } = req.body;
+exports.register = async (req, res) => {
+    const { firstname, lastname, username, email, password } = req.body;
+    console.log('Register request:', firstname, lastname, username, email, password);
 
     try {
-        // Check if user is super admin (implement your authorization logic here)
-
-        // Hash the new password
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-        // Update user's password in database
-        const updatedUser = await User.findByIdAndUpdate(uuid, { password: hashedPassword });
-
-        if (!updatedUser) {
-            return res.status(404).json({
-                code: 404,
+        // Validasi email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({
+                code: 400,
                 status: 'error',
-                message: 'User not found'
+                message: 'Invalid email address'
+            });
+        }
+
+        // Validasi username
+        if (username.length < 3 || username.length > 20) {
+            return res.status(400).json({
+                code: 400,
+                status: 'error',
+                message: 'Username must be between 3 and 20 characters'
+            });
+        }
+
+        // Validasi spasi di username
+        if (username.includes(' ')) {
+            return res.status(400).json({
+                code: 400,
+                status: 'error',
+                message: 'Username cannot contain spaces'
+            });
+        }
+
+        // Memeriksa apakah username sudah ada
+        const existingUser = await User.findByUsername(username);
+        if (existingUser) {
+            return res.status(409).json({
+                code: 409,
+                status: 'error',
+                message: 'Username already exists'
+            });
+        }
+
+        // Memeriksa apakah email sudah ada
+        const existingEmail = await User.findByEmail(email);
+        if (existingEmail) {
+            return res.status(409).json({
+                code: 409,
+                status: 'error',
+                message: 'Email already exists'
+            });
+        }
+
+        // Validasi password
+        if (password.length < 8) {
+            return res.status(400).json({
+                code: 400,
+                status: 'error',
+                message: 'Password must be at least 8 characters long'
+            });
+        }
+
+        // Membuat ekspresi reguler untuk memvalidasi password
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+        // Memeriksa apakah password sesuai dengan aturan
+        if (!passwordRegex.test(password)) {
+            return res.status(400).json({
+                code: 400,
+                status: 'error',
+                message: 'Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)'
+            });
+        }
+
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create new user
+        const user = await User.create(firstname, lastname, username, email, hashedPassword);
+
+        res.json({
+            code: 200,
+            status: 'success',
+            message: 'User created successfully',
+            user
+        });
+    } catch (error) {
+        console.error('Register error:', error);
+        res.status(500).json({
+            code: 500,
+            status: 'error',
+            message: 'Internal server error'
+        });
+    }
+};
+
+exports.loginByEmail = async (req, res) => {
+    const { email } = req.body;
+    console.log('Login request:', email);
+
+    try {
+        const user = await User.findByEmail(email);
+        if (!user) {
+            return res.status(401).json({
+                code: 401,
+                status: 'error',
+                message: 'Email not found'
             });
         }
 
         res.json({
             code: 200,
             status: 'success',
-            message: 'Password updated successfully'
+            message: 'Login successful',
+            data: {
+                id: user.id,
+                firstname: user.firstname,
+                lastname: user.lastname,
+                username: user.username,
+                email: user.email
+            }
         });
     } catch (error) {
-        console.error('Reset password error:', error);
+        console.error('Login error:', error);
         res.status(500).json({
             code: 500,
             status: 'error',
-            message: error.sqlMessage
+            message: 'Internal server error'
         });
     }
-};
+}
