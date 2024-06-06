@@ -46,6 +46,18 @@ class Story {
             });
         });
     }
+
+    static async findManyByTitle(title) {
+        return new Promise((resolve, reject) => {
+            query('SELECT * FROM stories WHERE title LIKE ?', [`%${title}%`], (error, results) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(results);
+                }
+            });
+        });
+    }
 }
 
 module.exports = Story;

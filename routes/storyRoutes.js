@@ -5,5 +5,6 @@ const storyController = require('../controllers/storyController');
 router.get('/', storyController.getStories);
 router.get('/:id', storyController.getStory);
 router.get('/themes/:themeId', storyController.getStoriesByTheme);
+router.get('/search/:title', storyController.searchStories);
 
 module.exports = router;
