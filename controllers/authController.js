@@ -8,14 +8,11 @@ dotenv.config();
 exports.login = async (req, res) => {
     const { username, password } = req.body;
 
-    console.log('Login request:', username, password);
-
     try {
         // Find user by username
         const user = await User.findByUsername(username);
 
         if (!user) {
-            console.log('User not found');
             return res.status(404).json({
                 code: 404,
                 status: 'error',
@@ -58,7 +55,6 @@ exports.login = async (req, res) => {
 
 exports.register = async (req, res) => {
     const { firstname, lastname, username, email, password } = req.body;
-    console.log('Register request:', firstname, lastname, username, email, password);
 
     try {
         // Validasi email
@@ -154,7 +150,6 @@ exports.register = async (req, res) => {
 
 exports.loginByEmail = async (req, res) => {
     const { email } = req.body;
-    console.log('Login request:', email);
 
     try {
         const user = await User.findByEmail(email);

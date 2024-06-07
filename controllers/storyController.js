@@ -78,8 +78,6 @@ exports.getStory = async (req, res) => {
 
         const themes = await theme.findManyById(themeIds);
 
-        console.log(themes);
-
         if (themes.length === 0) {
             return res.status(404).json({
                 code: 404,
@@ -215,7 +213,7 @@ exports.getHistoriesByUserId = async (req, res) => {
     const { user_id } = req.params;
     try {
         const userStoryLinks = await userStoryLink.findManyByUserId(user_id);
-        console.log(userStoryLinks);
+
         if (!userStoryLinks) {
             return res.status(404).json({
                 code: 404,
