@@ -1,7 +1,7 @@
 const { connection, query } = require('../config/database');
 
 class StoryThemeLink {
-    constructor(storyId, themeId) {
+    constructor(storyId, storyDetailId) {
         this.storyId = storyId;
         this.storyDetailId = storyDetailId;
     }
