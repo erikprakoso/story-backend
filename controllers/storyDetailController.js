@@ -1,13 +1,14 @@
 const story = require('../models/story');
 const storyDetail = require('../models/storyDetail');
 const storyStoryDetailLink = require('../models/storyStoryDetailLink');
+const userStoryLink = require('../models/userStoryLink');
 const dotenv = require('dotenv');
 
 // Mengakses variabel lingkungan jika menggunakan dotenv
 dotenv.config();
 
 exports.getStoryDetailsByStoryId = async (req, res) => {
-    const { id } = req.params;
+    const { id, user_id } = req.params;
     try {
         const storyDetailLinks = await storyStoryDetailLink.findManyByStoryId(id);
 
@@ -19,6 +20,8 @@ exports.getStoryDetailsByStoryId = async (req, res) => {
                 data: null
             });
         }
+
+        await userStoryLink.create(user_id, id);
 
         let storyDetailIds = [];
 
