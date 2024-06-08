@@ -78,3 +78,45 @@ exports.claimMission = async (req, res) => {
         });
     }
 }
+
+exports.rankedMissions = async (req, res) => {
+    try {
+        const user_id = req.params.user_id;
+
+        const count = await userStoryLink.countByUserId(user_id);
+
+        let rank = "";
+        if (count >= 34 && count <= 50) {
+            rank = "Diamond";
+        } else if (count >= 17 && count <= 33) {
+            rank = "Gold";
+        } else if (count >= 0 && count <= 16) {
+            rank = "Silver";
+        } else {
+            res.status(404).json({
+                code: 404,
+                status: 'error',
+                message: 'Invalid user story count',
+                data: null
+            });
+            return;
+        }
+
+        res.json({
+            code: 200,
+            status: 'success',
+            message: 'Ranked missions fetched successfully',
+            data: {
+                count,
+                rank
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching ranked missions:', error);
+        res.status(500).json({
+            code: 500,
+            status: 'error',
+            message: 'Internal server error'
+        });
+    }
+}

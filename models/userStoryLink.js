@@ -30,6 +30,18 @@ class UserStoryLink {
             });
         });
     }
+
+    static async countByUserId(userId) {
+        return new Promise((resolve, reject) => {
+            query('SELECT COUNT(*) AS count FROM user_story_links WHERE user_id = ?', [userId], (error, results) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(results[0].count);
+                }
+            });
+        });
+    }
 }
 
 module.exports = UserStoryLink;
