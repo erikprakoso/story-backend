@@ -9,7 +9,12 @@ exports.getThumbnails = async (req, res) => {
     try {
         const { filename } = req.params;
         if (!filename) {
-            return res.status(400).send('Filename query parameter is required');
+            return res.status(400).json({
+                code: 400,
+                status: 'error',
+                message: 'Missing filename',
+                data: null
+            })
         }
 
         const filePath = path.join(__dirname, '../uploads', filename);
