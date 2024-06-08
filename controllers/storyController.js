@@ -119,21 +119,21 @@ exports.getStoriesByTheme = async (req, res) => {
             });
         }
 
-        let themeIds = [];
+        let storyIds = [];
 
         if (themes.length > 0) {
             // Looping through themes and extracting theme_ids
-            themeIds = themes.map(theme => theme.theme_id).join(',');
+            storyIds = themes.map(theme => theme.story_id).join(',');
         } else {
             return res.status(404).json({
                 code: 404,
                 status: 'error',
-                message: 'No themes found',
+                message: 'No stories found',
                 data: null
             });
         }
 
-        if (themeIds.length === 0) {
+        if (storyIds.length === 0) {
             return res.status(404).json({
                 code: 404,
                 status: 'error',
@@ -142,7 +142,7 @@ exports.getStoriesByTheme = async (req, res) => {
             });
         }
 
-        const stories = await story.findManyById(themeIds);
+        const stories = await story.findManyById(storyIds);
 
         if (stories.length === 0) {
             return res.status(404).json({
