@@ -1,5 +1,4 @@
 const mission = require('../models/mission');
-const userMissionLink = require('../models/userMissionLink');
 const userStoryLink = require('../models/userStoryLink');
 const dotenv = require('dotenv');
 
@@ -10,17 +9,6 @@ exports.getMissionsByUserId = async (req, res) => {
     const { user_id } = req.params;
 
     try {
-        const userMissions = await userMissionLink.findManyByUserId(user_id);
-
-        if (userMissions.length === 0) {
-            return res.json({
-                code: 404,
-                status: 'error',
-                message: 'No missions found',
-                data: null
-            });
-        }
-
         const missions = await mission.findMany();
 
         const userStoryLinks = await userStoryLink.findManyByUserId(user_id);
