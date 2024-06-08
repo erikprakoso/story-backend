@@ -122,7 +122,7 @@ exports.getStoriesByTheme = async (req, res) => {
         let storyIds = [];
 
         if (themes.length > 0) {
-            // Looping through themes and extracting theme_ids
+            // Looping through themes and extracting story_ids
             storyIds = themes.map(theme => theme.story_id).join(',');
         } else {
             return res.status(404).json({
