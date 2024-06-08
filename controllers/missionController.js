@@ -1,5 +1,6 @@
 const mission = require('../models/mission');
 const userStoryLink = require('../models/userStoryLink');
+const userMissionLink = require('../models/userMissionLink');
 const dotenv = require('dotenv');
 
 // Mengakses variabel lingkungan jika menggunakan dotenv
@@ -40,6 +41,34 @@ exports.getMissionsByUserId = async (req, res) => {
             data: userMissionsCopy
         });
 
+    } catch (error) {
+        console.error('Error fetching missions:', error);
+        res.status(500).json({
+            code: 500,
+            status: 'error',
+            message: 'Internal server error'
+        });
+    }
+}
+
+exports.claimMission = async (req, res) => {
+    const { user_id, mission_id } = req.body;
+    try {
+        const entry = await userMissionLink.create(user_id, mission_id);
+        if (entry === 0) {
+            return res.status(400).json({
+                code: 400,
+                status: 'error',
+                message: 'Mission already claimed',
+                data: null
+            });
+        }
+        res.json({
+            code: 200,
+            status: 'success',
+            message: 'Mission claimed successfully',
+            data: null
+        });
     } catch (error) {
         console.error('Error fetching missions:', error);
         res.status(500).json({
