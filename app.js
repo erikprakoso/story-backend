@@ -8,6 +8,7 @@ const themeRoutes = require('./routes/themeRoutes');
 const storyDetailRoutes = require('./routes/storyDetailRoutes');
 const thumbnailRoutes = require('./routes/thumbnailRoutes');
 const missionRoutes = require('./routes/missionRoutes');
+const quizRoutes = require('./routes/quizRoutes');
 
 // Mengakses variabel lingkungan jika menggunakan dotenv
 dotenv.config();
@@ -26,6 +27,7 @@ app.use('/api/v1/themes', themeRoutes);
 app.use('/api/v1/story-details', storyDetailRoutes);
 app.use('/api/v1/thumbnails', thumbnailRoutes);
 app.use('/api/v1/missions', missionRoutes);
+app.use('/api/v1/quizzes', quizRoutes);
 
 // Menjalankan server Express
 const port = process.env.PORT || 3000;
