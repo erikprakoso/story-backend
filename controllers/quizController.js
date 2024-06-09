@@ -11,7 +11,7 @@ exports.getQuizByStoryId = async (req, res) => {
     const { story_id } = req.params;
     try {
         const storyQuizLinks = await storyQuizLink.findManyByStoryId(story_id);
-        console.log(storyQuizLinks);
+
         if (storyQuizLinks.length === 0) {
             return res.status(404).json({
                 code: 404,
@@ -22,7 +22,6 @@ exports.getQuizByStoryId = async (req, res) => {
         }
 
         const quizIds = storyQuizLinks.map(storyQuizLink => storyQuizLink.quiz_id).join(',');
-        console.log(quizIds);
 
         const quizzes = await quiz.findManyById(quizIds);
 
