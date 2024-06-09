@@ -263,3 +263,58 @@ exports.getHistoriesByUserId = async (req, res) => {
         });
     }
 }
+
+exports.getRecommendedStories = async (req, res) => {
+    const { user_id } = req.params;
+    try {
+        const userStoryLinks = await userStoryLink.getStoryIdCounts();
+
+        if (!userStoryLinks) {
+            return res.status(404).json({
+                code: 404,
+                status: 'error',
+                message: 'User story link not found',
+                data: null
+            });
+        }
+        if (userStoryLinks.length === 0) {
+            return res.status(404).json({
+                code: 404,
+                status: 'error',
+                message: 'No user story links found',
+                data: null
+            });
+        }
+        const storyIds = userStoryLinks.map(userStoryLink => userStoryLink.story_id).join(',');
+        const stories = await story.findManyById(storyIds);
+        if (!stories) {
+            return res.status(404).json({
+                code: 404,
+                status: 'error',
+                message: 'Stories not found',
+                data: null
+            });
+        }
+        if (stories.length === 0) {
+            return res.status(404).json({
+                code: 404,
+                status: 'error',
+                message: 'No stories found',
+                data: null
+            });
+        }
+        res.json({
+            code: 200,
+            status: 'success',
+            message: 'Stories fetched successfully',
+            data: stories
+        });
+    } catch (error) {
+        console.error('Error fetching story:', error);
+        res.status(500).json({
+            code: 500,
+            status: 'error',
+            message: 'Internal server error'
+        });
+    }
+}

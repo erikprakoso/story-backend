@@ -42,6 +42,18 @@ class UserStoryLink {
             });
         });
     }
+
+    static async getStoryIdCounts() {
+        return new Promise((resolve, reject) => {
+            query('SELECT story_id, COUNT(*) AS count FROM user_story_links GROUP BY story_id ORDER BY count DESC', (error, results) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(results);
+                }
+            });
+        });
+    }
 }
 
 module.exports = UserStoryLink;
